@@ -29,7 +29,6 @@ router.get("/", (req,res,next) => {
     db = JSON.parse(db);
     console.log("db", db);
     const { pokemons } = db;
-    totalPokemoms = pokemons.length;
     let result = [];
 
     if (filterKeys.length) {
@@ -39,7 +38,7 @@ router.get("/", (req,res,next) => {
            : pokemons.filter((pokemon) => pokemon[condition] === filterQuery[condition])       
         });
     } else {
-      result = { data: pokemons, totalPokemoms: pokemons.length }
+      result = pokemons;
     }
     result = result.slice(offset, offset + limit);
     res.send(200).send(result);
