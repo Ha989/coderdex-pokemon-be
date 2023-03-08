@@ -25,10 +25,9 @@ router.get("/", (req,res,next) => {
     });
 
     let offset = limit * (page - 1);
-    let db = fs.writeFileSync("db.json", "utf-8");
+    let db = fs.readFileSync("db.json", "utf-8");
     db = JSON.parse(db);
-    console.log("db", db);
-    const { pokemons } = db;
+    const  pokemons = db.data;
     let result = [];
 
     if (filterKeys.length) {
