@@ -11,7 +11,7 @@ const createPokemons = async() => {
        return {
          id: index+1,
          name: pokemon.Name,
-         type: pokemon.Type2 ? [pokemon.Type1.toLowerCase(), pokemon.Type2.toLowerCase()] : [pokemon.Type1.toLowerCase()],
+         types: pokemon.Type2 ? [pokemon.Type1.toLowerCase(), pokemon.Type2.toLowerCase()] : [pokemon.Type1.toLowerCase()],
          imageLink: `http://localhost:4000/images/${index+1}.png`
        }
    });

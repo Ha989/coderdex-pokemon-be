@@ -39,7 +39,7 @@ router.get("/", (req, res, next) => {
       }
       if (filterKeys.includes("type")) {
         result = pokemons.filter((pokemon) =>
-          pokemon.type.includes(filterQuery.type)
+          pokemon.types.includes(filterQuery.type)
         );
       }
     } else {
@@ -51,6 +51,40 @@ router.get("/", (req, res, next) => {
     next(error);
   }
 });
+
+// get single pokemon
+router.get("/:id", (req,res,next) => {
+  const { id } = req.params;
+  try {
+    let db = fs.readFileSync("db.json", "utf-8")   
+    db = JSON.parse(db);
+    const data = db.data;
+
+    let currentIndex = data.findIndex((pokemon) => pokemon.id === parseInt(id));
+    console.log("index", currentIndex)
+    
+    let prevIndex = currentIndex - 1;
+    let nextIndex = currentIndex + 1;
+
+    if (currentIndex === 0) {
+      prevIndex = data.length -1;
+    } 
+    if (currentIndex === data.length + 1) {
+      nextIndex = 0
+    };
+
+    const result = {
+      prevPokemon: data[prevIndex],
+      currentPokemon: data[currentIndex],
+      nextPokemon: data[nextIndex],
+    }
+    
+     res.send(result)
+  } catch (error) {
+    next(error)
+  }
+})
+
 
 // post pokemon
 
@@ -81,8 +115,8 @@ router.post("/", (req, res, next) => {
     db = JSON.parse(db);
     const data = db.data;
 
-    const { id, name, type, imageLink } = req.body;
-    if ((!id, !name || !type || !imageLink)) {
+    const { id, name, types, imageLink } = req.body;
+    if ((!id, !name || !types || !imageLink)) {
       error(`Missing body info`, 401);
     }
 
@@ -91,14 +125,14 @@ router.post("/", (req, res, next) => {
       error(`The Pokémon already exists`, 401);
     }
 
-    if (type.length > 2) { error(`Pokémon can only have one or two types`, 401); }
+    if (types.length > 2) { error(`Pokémon can only have one or two types`, 401); }
 
-    if ( !pokemonTypes.filter((pokemonType) => pokemonType !== type.join())
+    if ( !pokemonTypes.filter((pokemonType) => pokemonType !== types.join())
     ) {
       error(`Pokémon's type is invalid`, 401);
     }
 
-    const newPokemon = { id: parseInt(id), name, type, imageLink };
+    const newPokemon = { id: parseInt(id), name, types, imageLink };
 
     data.push(newPokemon);
 
@@ -112,15 +146,59 @@ router.post("/", (req, res, next) => {
   }
 });
 
+// edit pokemon
+
+router.put("/:id", (req,res,next) => {
+  try {
+    const allowUpdate = [ "name", "types", "imageLink" ];
+
+    const { id } = req.params;
+
+    const updates = req.body;
+   
+    const updateKeys = Object.keys(updates);
+    
+    const notAllow = updateKeys.filter((el) => !allowUpdate.includes(el));
+
+    if (notAllow.length) {
+      error(`Update field not allow`, 401)
+    };
+
+    let db = fs.readFileSync("db.json", "utf-8");
+    db = JSON.parse(db);
+    const data = db.data;
+     
+    const targetIndex = data.findIndex((pokemon) =>
+      pokemon.id === parseInt(id));
+    console.log("target", targetIndex);
+    
+    if (targetIndex < 0) {
+      error(`Pokemon not found`, 401)
+    }
+
+    const updatedPokemon = {...data[targetIndex],...updates};
+    db.data[targetIndex] = updatedPokemon;
+   
+    db.data = data;
+    db = JSON.stringify(db);
+
+    fs.writeFileSync("db.json", db);
+    res.send(updatedPokemon);
+
+  } catch (error) {
+    next(error)
+  }
+})
 //delete pokemon
 
 router.delete("/:id", (req, res, next) => {
   try {
-    let db = fs.readFileSync("db.json", "utf-8");
-    db = JSON.parse(db);
-    const data = db.data;
 
     const { id } = req.params;
+
+    let db = fs.readFileSync("db.json", "utf-8");
+    db = JSON.parse(db);
+    const {data} = db;
 
     const targetIndex = data.find((pokemon) => {
       pokemon.id === parseInt(id);
@@ -130,8 +208,8 @@ router.delete("/:id", (req, res, next) => {
       error(`Pokemon not found`, 404);
     }
 
-    db = data.filter((pokemon) => pokemon.id !== parseInt(id));
-
+    db.data = data.filter((pokemon) => pokemon.id !== parseInt(id));
+   
     db = JSON.stringify(db);
     fs.writeFileSync("db.json", db);
     res.send("ok");
@@ -139,8 +217,5 @@ router.delete("/:id", (req, res, next) => {
     next(error);
   }
 });
-// cấu hình eslint, extension , cách debug, viết coi sao cho sách //  cors // cookieParser , authoration, jsonwebtoke,https, htttp, , mw cách hoạt động, cấu trúc một be
-//
-// post(create) // thông tin đầu vào ( bắt buộc gì có), kiểm tra(trùng name , id ....), ( viết lại db.json // )
-// put(update) // thông tin đầu vào (kiểm tra id === có k ), kt (kiểm tra dữ liệu, những cái k dc cập nhật), /(tìm cái id cập nhật lại trả oke)
+
 module.exports = router;
