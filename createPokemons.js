@@ -1,6 +1,6 @@
 const fs = require('fs');
 const csv = require('csvtojson');
-
+// cấu hình lại
 const createPokemons = async() => {
    let newData = await csv().fromFile("pokemon.csv");
    let data = JSON.parse(fs.readFileSync('db.json'));
@@ -11,7 +11,7 @@ const createPokemons = async() => {
        return {
          id: index+1,
          name: pokemon.Name,
-         type: pokemon.Type2 ? [pokemon.Type1] : [pokemon.Type1, pokemon.Type2],
+         type: pokemon.Type2 ? [pokemon.Type1.toLowerCase(), pokemon.Type2.toLowerCase()] : [pokemon.Type1.toLowerCase()],
          imageLink: `http://localhost:4000/images/${index+1}.png`
        }
    });

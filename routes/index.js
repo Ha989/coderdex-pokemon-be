@@ -8,6 +8,7 @@ router.get('/', function(req, res, next) {
 });
 
 const pokemonRouter = require('./pokemon.api.js');
-router.use('/pokemons', pokemonRouter);
+router.use('/pokemons',pokemonRouter);
+
 
 module.exports = router;
