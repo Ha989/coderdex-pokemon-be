@@ -61,23 +61,23 @@ router.get("/:id", (req,res,next) => {
     const data = db.data;
 
     let currentIndex = data.findIndex((pokemon) => pokemon.id === parseInt(id));
-    console.log("index", currentIndex)
-    
+   
+    let totalIndex = data.length - 1;
+   
     let prevIndex = currentIndex - 1;
     let nextIndex = currentIndex + 1;
-
     if (currentIndex === 0) {
-      prevIndex = data.length -1;
-    } 
-    if (currentIndex === data.length + 1) {
-      nextIndex = 0
-    };
-
+      prevIndex = totalIndex;
+    } else if ( currentIndex === totalIndex ) {
+      nextIndex = 0;
+    }
+      
     const result = {
-      prevPokemon: data[prevIndex],
-      currentPokemon: data[currentIndex],
+      previousPokemon: data[prevIndex],
+      pokemon: data[currentIndex],
       nextPokemon: data[nextIndex],
     }
+    console.log("re", result)
     
      res.send(result)
   } catch (error) {
@@ -86,7 +86,7 @@ router.get("/:id", (req,res,next) => {
 })
 
 
-// post pokemon
+// add pokemon
 
 router.post("/", (req, res, next) => {
   const pokemonTypes = [
@@ -113,7 +113,7 @@ router.post("/", (req, res, next) => {
   try {
     let db = fs.readFileSync("db.json", "utf-8");
     db = JSON.parse(db);
-    const data = db.data;
+    const {data} = db;
 
     const { id, name, types, imageLink } = req.body;
     if ((!id, !name || !types || !imageLink)) {
@@ -135,8 +135,6 @@ router.post("/", (req, res, next) => {
     const newPokemon = { id: parseInt(id), name, types, imageLink };
 
     data.push(newPokemon);
-
-    db.data = data;
 
     db = JSON.stringify(db);
     fs.writeFileSync("db.json", db);
